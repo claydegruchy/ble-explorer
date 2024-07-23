@@ -4,3 +4,5 @@ the purpose of this is to display how to connect an esp32 or similar to a webpag
 
 the link in the top right will work on most computer browsers, but wont work on mobile unless specifically built for it.
 the esp code is stored in the .cpp file. 
+
+note that i made this thing in anout 20 mins so there may be bugs!
