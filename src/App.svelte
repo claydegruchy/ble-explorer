@@ -1,47 +1,51 @@
 <script>
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+  import {
+    BleClient,
+    numbersToDataView,
+    dataViewToNumbers,
+    dataViewToText,
+  } from "@capacitor-community/bluetooth-le";
+
+  const service = "0000180f-0000-1000-8000-00805f9b34fb";
+  const characteristic = "00002a19-0000-1000-8000-00805f9b34fb";
+
+  let device = {};
+
+  async function connect() {
+    await BleClient.initialize({
+      androidNeverForLocation: true,
+    });
+    device = await BleClient.requestDevice({
+      services: [],
+      optionalServices: [service],
+    });
+
+    await BleClient.disconnect(device.deviceId);
+    await BleClient.connect(device.deviceId);
+  }
+
+  let lastBatteryReading;
+  async function read() {
+    let value = await BleClient.read(device.deviceId, service, characteristic);
+    console.log(value);
+    lastBatteryReading = dataViewToNumbers(value);
+  }
 </script>
 
 <main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
+  <div>This is a BLE test tool</div>
+  {#if device.deviceId}
+    Connected to: {device.name}
 
-  <div class="card">
-    <Counter />
-  </div>
+    <button on:click={read}>Read battery level</button>
 
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
+    {#if lastBatteryReading}
+      Last battery reading: {lastBatteryReading}
+    {/if}
+  {:else}
+    <button on:click={connect}>Connect</button>
+  {/if}
 </main>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
 </style>
